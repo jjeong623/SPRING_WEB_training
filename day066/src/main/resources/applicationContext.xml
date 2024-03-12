@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding= "UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:tx="http://www.springframework.org/schema/tx"
+   xsi:schemaLocation= "http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-4.2.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+      http://www.springframework.org/schema/tx
+      http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+	
+	<context:component-scan base-package="com.spring.biz" />
+
+	<aop:aspectj-autoproxy />
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/kimdb" />
+		<property name="username" value="root" />
+		<property name="password" value="1234" />
+	</bean>
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="*" />
+			<tx:method name="select*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut id="aPointcut" expression="execution(* com.spring.biz..*Impl.*(..))" />
+		
+		<aop:advisor pointcut-ref="aPointcut" advice-ref="txAdvice" />
+	</aop:config>
+	
+	<!--
+	<bean class="com.spring.biz.common.LogAdvice" id="logAdvice" />
+	<bean class="com.spring.biz.common.AfterReturningAdvice" id="ara" />
+	<bean class="com.spring.biz.common.AfterThrowingAdvice" id="ata" />
+	<bean class="com.spring.biz.common.AroundAdvice" id="aa" />
+	<aop:config>
+		<aop:pointcut id="aPointcut" expression="execution(* com.spring.biz..*Impl.*(..))" />
+		<aop:pointcut id="bPointcut" expression="execution(* com.spring.biz..*Impl.select*(..))" />
+		
+		<aop:aspect ref="aa">
+			<aop:around pointcut-ref="aPointcut" method="aroundPrintLog" />
+		</aop:aspect>
+		<aop:aspect ref="ara">
+			<aop:after-returning pointcut-ref="bPointcut" method="afterReturningPrintLog" />
+		</aop:aspect>
+		<aop:aspect ref="ata">
+			<aop:after-throwing pointcut-ref="aPointcut" method="printException" />
+		</aop:aspect>
+	</aop:config>
+	-->
+
+</beans>
